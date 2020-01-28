@@ -1,40 +1,46 @@
-from data.derivatives import *
-from data.hillfunctions import *
+from solver.derivatives import *
+from solver.hillfunctions import *
+
+# dokładnosc calkowania
+step = 0.1
 
 
-def integral(function, x_start, x_end):
-    sum = 0
-    step = 0.1
-    x = x_start
-    while x < x_end:
+# całka pojedyncza wg Riemanna
+def integral(f: partial, lower_bound: float, upper_bound: float) -> float:
+    result = 0
+    x = lower_bound
+    while x < upper_bound:
         x2 = x + step / 2
-        sum += step * function(x2)
+        result += step * f(x2)
         x += step
 
-    return sum
+    return result
 
 
-def double_integral(xy_function, x_start, y_start, x_end, y_end):
-    sum = 0
-    step = 0.1
+# cąłka podwojna wg Riemanna
+def double_integral(f: partial, x_lower_bound: float, y_lower_bound: float, x_upper_bound: float,
+                    y_upper_bound: float) -> float:
+    result = 0
     base_area = step * step
 
-    x = x_start
-    while x < x_end:
-        y = y_start
-        while y < y_end:
+    x = x_lower_bound
+    while x < x_upper_bound:
+        y = y_lower_bound
+        while y < y_upper_bound:
             x2 = x + step / 2
             y2 = y + step / 2
-            sum += base_area * xy_function(x2, y2)
+            result += base_area * f(x2, y2)
             y += step
         x += step
 
-    return sum
+    return result
 
 
-def first(x, y, k, i, j):
-    return k * x_xy_derivative(partial_pyramids[i], x, y) * x_xy_derivative(partial_pyramids[j], x, y)
+# pierwsza funckja podcalkowa - pomoc do liczenia B(i,j)
+def first_integrand(x: float, y: float, k: float, i: int, j: int) -> float:
+    return k * df_dx(elements[i], x, y) * df_dx(elements[j], x, y)
 
 
-def second(x, y, k, i, j):
-    return k * y_xy_derivative(partial_pyramids[i], x, y) * y_xy_derivative(partial_pyramids[j], x, y)
+#  druga podcałkowa - pomoc do liczenia B(i,j)
+def second_integrand(x: float, y: float, k: float, i: int, j: int) -> float:
+    return k * df_dy(elements[i], x, y) * df_dy(elements[j], x, y)

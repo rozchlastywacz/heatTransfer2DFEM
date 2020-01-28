@@ -1,19 +1,21 @@
+# Algorytm Gaussa wzięty ze StackOverflow
+
 def solve(A):
     n = len(A)
 
     for i in range(0, n):
         # Search for maximum in this column
-        maxEl = abs(A[i][i])
-        maxRow = i
+        max_el = abs(A[i][i])
+        max_row = i
         for k in range(i + 1, n):
-            if abs(A[k][i]) > maxEl:
-                maxEl = abs(A[k][i])
-                maxRow = k
+            if abs(A[k][i]) > max_el:
+                max_el = abs(A[k][i])
+                max_row = k
 
         # Swap maximum row with current row (column by column)
         for k in range(i, n + 1):
-            tmp = A[maxRow][k]
-            A[maxRow][k] = A[i][k]
+            tmp = A[max_row][k]
+            A[max_row][k] = A[i][k]
             A[i][k] = tmp
 
         # Make all rows below this one 0 in current column

@@ -1,10 +1,14 @@
-def x_xy_derivative(xy_function, x, y):  # po x
-    h = 0.001
-    result = (xy_function(x + h, y) - xy_function(x, y)) / h
+from functools import partial
+# dokładnosc pochodnej
+h = 0.0001
+
+
+# pochodna centralna liczona z definicji po x i nizej po y
+def df_dx(f: partial, x: float, y: float) -> float:
+    result = (f(x + h, y) - f(x - h, y)) / (2 * h)
     return result
 
 
-def y_xy_derivative(xy_function, x, y):  # po y
-    h = 0.001
-    result = (xy_function(x, y + h) - xy_function(x, y)) / h
+def df_dy(f: partial, x: float, y: float) -> float:
+    result = (f(x, y + h) - f(x, y - h)) / (2 * h)
     return result

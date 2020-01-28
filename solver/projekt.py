@@ -1,48 +1,42 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from data.boundaries import gv_x, gv_y
-from data.gauss import solve
-from data.integrals import *
+from solver.boundaries import gv_x, gv_y
+from solver.gauss import solve
+from solver.integrals import *
+from solver.visualizer import visualize
 
-elements_number: int = len(top_points)
-
-B_matrix = np.arange(25, dtype=np.float).reshape(5, 5)
-
+# liczba piramidek
+elements_number: int = len(summits)
+# deklaracja macierzy B z pomocą numpy - macierz n x n
+B_matrix = np.arange(25, dtype=np.float).reshape(elements_number, elements_number)
+# obliczanie elementow macierzy B
 for i in range(elements_number):
+    # magiczne pythonowe wyciaganie elementow z krotek(tuple)
+    # wyciagam krotke (start, end), ktore tez sa krotkami
     start, end = limits[i]
-    xi_start, yi_start = start
-    xi_end, yi_end = end
+    # dlatego teraz wyciagam ze start i z end wartosci do granic calkowania
+    x_lower_bound, y_lower_bound = start
+    x_upper_bound, y_upper_bound = end
     for j in range(elements_number):
-        B_matrix[i, j] = (double_integral(partial(first, k=k, i=i, j=j), xi_start, yi_start, xi_end, yi_end)
-                          + double_integral(partial(second, k=k, i=i, j=j), xi_start, yi_start, xi_end, yi_end))
+        B_matrix[i, j] = (double_integral(partial(first_integrand, k=k, i=i, j=j), x_lower_bound, y_lower_bound,
+                                          x_upper_bound, y_upper_bound)
+                          +
+                          double_integral(partial(second_integrand, k=k, i=i, j=j), x_lower_bound, y_lower_bound,
+                                          x_upper_bound, y_upper_bound))
+# deklaracja macierzy L
+L_matrix = np.arange(elements_number, dtype=np.float).reshape(elements_number, 1)
+print(B_matrix)
+# obliczanie elementow macierzy L
+for i in range(elements_number):
+    x, y = summits[i]
+    start, end = limits[i]
+    x_lower_bound, y_lower_bound = start
+    x_upper_bound, y_upper_bound = end
+    L_matrix[i, 0] = integral(partial(gv_x, index=i, y=y), x_lower_bound, x_upper_bound) + integral(
+        partial(gv_y, index=i, x=x), y_lower_bound, y_upper_bound)
 
-L_matrix = np.arange(5, dtype=np.float).reshape(5, 1)
-
-L_matrix[0, 0] = integral(partial(gv_x, i=0, y=1), -1, 0) + integral(partial(gv_y, i=0, x=-1), 0, 1)
-L_matrix[1, 0] = integral(partial(gv_y, i=1, x=-1), -1, 1)
-L_matrix[2, 0] = integral(partial(gv_y, i=2, x=-1), -1, 0) + integral(partial(gv_x, i=2, y=-1), -1, 0)
-L_matrix[3, 0] = integral(partial(gv_x, i=3, y=-1), -1, 1)
-L_matrix[4, 0] = integral(partial(gv_x, i=4, y=-1), -1, 1) + integral(partial(gv_y, i=4, x=1), -1, 0)
-
-
+# rozwiązanie układu rownan Gaussem
 W_matrix = solve(np.hstack((B_matrix, L_matrix)))
-
-
-def final_function(x, y):
-    result: float = 0
-    for j in range(elements_number):
-        result += W_matrix[j] * partial_pyramids[j](x, y)
-    return result
-
-
-# create data
-
-size = 100
-xi = yi = np.linspace(-1, 1, size)
-zi = np.array([final_function(i, j) for j in yi for i in xi])
-
-# Change color palette
-plt.pcolormesh(xi, yi, zi.reshape(size, size), cmap=plt.cm.YlOrRd)
-plt.colorbar()
-plt.show()
+# narysowanie wykresu
+visualize(elements_number, W_matrix, elements)
